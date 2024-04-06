@@ -1,52 +1,31 @@
-import datetime
-import os
-import tempfile
-from autogen import ConversableAgent
-from autogen.coding import LocalCommandLineCodeExecutor
+from autogen import AssistantAgent , UserProxyAgent , config_list_from_json , GroupChat , GroupChatManager
+
+config_list = config_list_from_json(env_or_file="OAI_CONFIG_LIST")
 
 
 
-from typing import Annotated, Literal
+llm_config = {
+    "config_list": config_list,
+    "seed" : 42,
+    "temperature" : 0,
+    "request_timeout":300
+}
 
-Operator = Literal["+", "-", "*", "/"]
-
-
-def calculator(a: int, b: int, operator: Annotated[Operator, "operator"]) -> int:
-    if operator == "+":
-        return a + b
-    elif operator == "-":
-        return a - b
-    elif operator == "*":
-        return a * b
-    elif operator == "/":
-        return int(a / b)
-    else:
-        raise ValueError("Invalid operator")
-
-# Let's first define the assistant agent that suggests tool calls.
-assistant = ConversableAgent(
-    name="Assistant",
-    system_message="You are a helpful AI assistant. "
-    "You can help with simple calculations. "
-    "Return 'TERMINATE' when the task is done.",
-    llm_config={"config_list": [{"model": "gpt-4", "api_key": os.environ["OPENAI_API_KEY"]}]},
+user_proxy = UserProxyAgent(
+    name= "Admin",
+    system_message= "A human admin. Interact with the planner to discuss the plan. Plan execution needs to be approved by this admin",
+    code_execution_config=False 
 )
 
-# The user proxy agent is used for interacting with the assistant agent
-# and executes tool calls.
-user_proxy = ConversableAgent(
-    name="User",
-    llm_config=False,
-    is_termination_msg=lambda msg: msg.get("content") is not None and "TERMINATE" in msg["content"],
-    human_input_mode="NEVER",
+engineer = AssistantAgent(
+    name="Engineer",
+    llm_config=llm_config
 )
 
-# Register the tool signature with the assistant agent.
-assistant.register_for_llm(name="calculator", description="A simple calculator")(calculator)
+# planer = AssistantAgent(
+#       name="Planer",
+#       system_message=''
+#       llm_config=llm_config
+# )
 
-# Register the tool function with the user proxy agent.
-user_proxy.register_for_execution(name="calculator")(calculator)
-
-
-chat_result = user_proxy.initiate_chat(assistant, message="What is (44232 + 13312 / (232 - 32)) * 5?")
-
+print(engineer.system_message)
