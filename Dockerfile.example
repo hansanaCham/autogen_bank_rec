@@ -26,8 +26,7 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-#ENV OPENAI_API_KEY="{yout key}"
-# Expose port
+
 EXPOSE 8081
 
 
