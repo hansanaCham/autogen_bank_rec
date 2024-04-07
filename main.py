@@ -1,5 +1,6 @@
 import csv
-from autogen import AssistantAgent, UserProxyAgent , config_list_from_json
+from autogen import AssistantAgent, UserProxyAgent , config_list_from_json ,GroupChat ,GroupChatManager ,ConversableAgent
+from autogen.agentchat import register_function
 
 config_list  = config_list_from_json(env_or_file="OAI_CONFIG_LIST")
 
@@ -21,15 +22,13 @@ def get_bank_details() -> list[dict]:
   try:
     with open('feedback/files/bank.csv', 'r') as csvfile:
       csv_reader = csv.reader(csvfile)
-      headers = next(csv_reader)  # Read headers (column names)
-      data = []
+      data = ""
       for row in csv_reader:
-        row_dict = dict(zip(headers, row))  # Create dictionary from row
-        data.append(row_dict)
-      return data
+          data += ",".join(row) + "\n"  # Join row elements with commas
+      return data.rstrip("\n")  # Remove trailing newline character
 
   except FileNotFoundError:
-    raise FileNotFoundError(f"CSV file not found")
+      raise FileNotFoundError("CSV file not found")
 
 def get_company_details() -> list[dict]:
   """
@@ -48,16 +47,13 @@ def get_company_details() -> list[dict]:
   try:
     with open('feedback/files/company.csv', 'r') as csvfile:
       csv_reader = csv.reader(csvfile)
-      headers = next(csv_reader)  # Read headers (column names)
-      data = []
+      data = ""
       for row in csv_reader:
-        row_dict = dict(zip(headers, row))  # Create dictionary from row
-        data.append(row_dict)
-      return data
+          data += ",".join(row) + "\n"  # Join row elements with commas
+      return data.rstrip("\n")  # Remove trailing newline character
 
   except FileNotFoundError:
-    raise FileNotFoundError(f"CSV file not found")  
-  
+      raise FileNotFoundError("CSV file not found")
 
 proxey = UserProxyAgent(
     name="user_proxy",
@@ -67,31 +63,60 @@ proxey = UserProxyAgent(
     code_execution_config=False
 )
 
-accoutant = AssistantAgent(
+accoutant = ConversableAgent(
   name= "accoutant",
-  human_input_mode = '''You are a accountant your job is to reconsille bank and company finansial statement use the tools get bank details and 
-                      get company details only to get data then reconsile and put mis matching records be below buckets
-                      1 - Recods Found in the bank but not in the company (credits)
-                      1 - Recods Found in the bank but not in the company (debits)
-                      3 - Records found in the compnay but not in the bank (credits)
-                      4 - Records found in the compnay but not in the bank (debits)
+  human_input_mode = '''You are a accountant and you do bank reconsiliations respond outputs only relation the spscific bank rec only when rec is done say TERMINATE''',
+  llm_config={"config_list":config_list}                    
 
-                      Finally create the reconsiliation report
-                      Reply TERMINATE when the task is done.        
-                      ''',
+)
+
+accoutant_assistant = ConversableAgent(
+  name= "assistant_accountant",
+  human_input_mode = "only use the functions you have been provided with.",
   llm_config={"config_list":config_list}                    
 
 )
 
 
-proxey.register_for_execution(name="get_bank_details")(get_bank_details)
-accoutant.register_for_llm(name="get_bank_details",description="get bank statement for reconsiliation")(get_bank_details)
+register_function(
+  get_bank_details,
+  caller=accoutant_assistant,
+  executor= proxey,
+  description="get bank statement for reconsiliation"
+)
+
+register_function(
+  get_company_details,
+  caller=accoutant_assistant,
+  executor= proxey,
+  description="get company financial statement for reconsiliation"
+)
 
 
-proxey.register_for_execution(name="get_company_details")(get_company_details)
-accoutant.register_for_llm(name="get_company_details",description="get company financial statement for reconsiliation")(get_company_details) 
+# print(accoutant.system_message)
 
 
-proxey.initiate_chat(accoutant,message="reconsile bank statement and company finaicial statment")
+groupchat = GroupChat(
+        agents=[proxey, accoutant, accoutant_assistant], messages=[], max_round=12
+    )
 
 
+manager = GroupChatManager(
+        groupchat=groupchat, llm_config={"config_list": config_list, "timeout": 100, "temperature": 0}
+    )
+
+
+# print(get_bank_details())
+
+proxey.initiate_chat(manager,message=''' Reconsibe bank statement and Company statement use follwong steps
+                      1 - get the bank details form assistant_accountant
+                      2 - get the bank details form assistant_accountant
+                      3 - accountant do the reconsiliation in folling manner :
+                        1 - Recods Found in the bank but not in the company (credits)
+                        2 - Recods Found in the bank but not in the company (debits)
+                        3 - Records found in the compnay but not in the bank (credits)
+                        4 - Records found in the compnay but not in the bank (debits)
+                        5 - Show the reconsiled report
+                        ")'''
+
+)
