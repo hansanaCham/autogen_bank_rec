@@ -162,6 +162,7 @@ Dockerfile
 Dockerfile.production
 .cache/
 .devcontainer/
-OAL_CONFIG_LIST
+OAI_CONFIG_LIST
+devcontainer.json
 devcontainer.json
 
