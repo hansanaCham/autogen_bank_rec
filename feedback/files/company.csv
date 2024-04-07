@@ -1,0 +1,11 @@
+Date,Description,Amount
+Mar 1,Salary Deposit (ACH),$1,000
+Mar 3,Client Invoice Payment (code: xyz123),$500
+Mar 5,ATM Withdrawal,-$40 (discrepancy)
+Mar 7,Office Supplies Purchase,-$75
+Mar 10,Interest Earned,$2
+Mar 12,Client Invoice Payment (code: abc456),$700
+Mar 15,Bank Fee,-$0  (assuming recorded now)
+Mar 19,Utility Bill Payment,-$80
+Mar 22,Deposit from Returned Check,$200
+Mar 25,Credit Card Payment,-$400

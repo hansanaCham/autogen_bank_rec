@@ -1,0 +1,11 @@
+Date,Description,Amount,Balance
+Mar 1,ACH Deposit,$1,000,$1,000
+Mar 3,Point-of-Sale Purchase,$500,$1,500
+Mar 5,ATM Cash Disbursement,-$50,$1,450
+Mar 7,Debit Card Purchase,-$75,$1,375
+Mar 10,Interest Credited,$2,$1,377
+Mar 12,Client Invoice Payment (ACH),$700,$2,077
+Mar 15,Monthly Service Charge,-$10,$2,067
+Mar 19,ACH Payment,-$80,$1,987
+Mar 22,Deposit,$200,$2,187
+Mar 25,Payment,-$400,$1,787

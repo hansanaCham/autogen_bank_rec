@@ -163,4 +163,5 @@ Dockerfile.production
 .cache/
 .devcontainer/
 OAL_CONFIG_LIST
+devcontainer.json
 
