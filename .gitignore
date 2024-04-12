@@ -165,4 +165,5 @@ Dockerfile.production
 OAI_CONFIG_LIST
 devcontainer.json
 devcontainer.json
+.github
 
