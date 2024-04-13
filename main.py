@@ -65,7 +65,15 @@ proxey = UserProxyAgent(
 
 accoutant = ConversableAgent(
   name= "accoutant",
-  human_input_mode = '''You are a accountant and you do bank reconsiliations respond outputs only relation the spscific bank rec only when rec is done say TERMINATE''',
+  human_input_mode = '''You are a accountant and you do bank reconsiliations respond outputs only relation the spscific bank rec only when rec is done say TERMINATE
+                      You always use the belw serps for reconsiliations:
+                        1 - Recods Found in the bank but not in the company (credits)
+                        2 - Recods Found in the bank but not in the company (debits)
+                        3 - Records found in the compnay but not in the bank (credits)
+                        4 - Records found in the compnay but not in the bank (debits)
+                        5 - Show the reconsiled report
+                        6 - when rec is done say terminate to terminate the convasation
+                      ''',
   llm_config={"config_list":config_list}                    
 
 )
@@ -111,12 +119,7 @@ manager = GroupChatManager(
 proxey.initiate_chat(manager,message=''' Reconsibe bank statement and Company statement use follwong steps
                       1 - get the bank details form assistant_accountant
                       2 - get the bank details form assistant_accountant
-                      3 - accountant do the reconsiliation in folling manner :
-                        1 - Recods Found in the bank but not in the company (credits)
-                        2 - Recods Found in the bank but not in the company (debits)
-                        3 - Records found in the compnay but not in the bank (credits)
-                        4 - Records found in the compnay but not in the bank (debits)
-                        5 - Show the reconsiled report
+                      3 - accountant do the reconsiliation :                       
                         ")'''
 
 )
